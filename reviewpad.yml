@@ -12,4 +12,4 @@ workflows:
       if: $rule("touches go files") && $rule("event is opened or synchronize")
       then:
         - $info("Running CI")
-        - $triggerWorkflow("build.yml")
+        # - $triggerWorkflow("build.yml")
