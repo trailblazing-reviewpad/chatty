@@ -8,11 +8,11 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	log_utils "github.com/reviewpad/go-lib/logrus"
 	oai "github.com/reviewpad/openai"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	log_utils "github.com/trailblazing-reviewpad/chatty/logrus"
 )
 
 const (

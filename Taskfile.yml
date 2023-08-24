@@ -18,18 +18,6 @@ tasks:
       - ./**/*.go
 
   build:
-    deps:
-      - build-cli
-    summary: |
-      Builds Go files.
-
-      Run with --watch or -w to watch for changes on Go files.
-    cmds:
-      - go build
-    sources:
-      - ./**/*.go
-
-  build-cli:
     summary: |
       Builds commands.
 
