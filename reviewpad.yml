@@ -3,7 +3,7 @@ rules:
     spec: $getEventType() == "opened" || $getEventType() == "synchronize"
 
   - name: touches go files
-    spec: $containsFilePattern("*.go")
+    spec: $containsFilePattern("**/**.go")
   
 
 workflows:
