@@ -1,0 +1,130 @@
+version: "3"
+
+tasks:
+  deps:
+    summary: Install dependencies
+    cmds:
+      - go mod download
+      - go mod tidy
+
+  format:
+    summary: |
+      Formats Go files.
+
+      Run with --watch or -w to watch for changes on Go files.
+    cmds:
+      - gofmt -s -w .
+    sources:
+      - ./**/*.go
+
+  build:
+    deps:
+      - build-cli
+    summary: |
+      Builds Go files.
+
+      Run with --watch or -w to watch for changes on Go files.
+    cmds:
+      - go build
+    sources:
+      - ./**/*.go
+
+  build-cli:
+    summary: |
+      Builds commands.
+
+      Run with --watch or -w to watch for changes on Go files.
+    cmds:
+      - go build -o chatty ./cli/main.go
+    sources:
+      - ./**/*.go
+
+  test:
+    summary: |
+      Runs unit tests with coverage
+
+      Run with --watch or -w to watch for changes on _test.go files.
+    cmds:
+      - gotestsum -- -coverprofile=coverage.out ./...
+    sources:
+      - ./**/*_test.go
+
+  coverage:
+    summary: Generates coverage report and opens it
+    deps:
+      - test
+    cmds:
+      - go tool cover -html=coverage.out
+
+  coverage-diff:
+    summary: Show coverage difference between current branch and master
+    cmds:
+      - |
+        gotestsum -- -coverprofile=coverage.out ./...
+        . scripts/exclude-from-code-coverage.sh
+        current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+        current_line_total=$(go tool cover -func coverage.out | grep -e 'total:')
+        current_total_int=$(echo "$current_line_total" | grep -o '[0-9.]*')
+        git checkout main
+        gotestsum -- -coverprofile=coverage.out ./...
+        . scripts/exclude-from-code-coverage.sh
+
+        main_line_total=$(go tool cover -func coverage.out | grep -e 'total:')
+        main_total_int=$(echo "$main_line_total" | grep -o '[0-9.]*')
+        git checkout $current_branch
+        echo "branch $current_branch coverage: $current_total_int%"
+        echo "branch main coverage: $main_total_int%"
+        if ((current_total_int > main_total_int))
+        then
+          diff=$(echo "$current_total_int $main_total_int" | awk '{print $1 - $2}')
+          echo "difference: + $diff%"
+        else
+          diff=$(echo "$main_total_int $current_total_int" | awk '{print $1 - $2}')
+          echo "difference: - $diff%"
+        fi
+    silent: true
+
+  lint:
+    summary: |
+      Runs the linter
+      If error try `brew install golangci-lint`
+    cmds:
+      - golangci-lint run
+
+  shadow:
+    summary: |
+      Detect shadowed variables
+      If error try `go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest`
+    cmds:
+      - shadow ./...
+
+  gen-proto:
+    summary: |
+      Generates protobuf written in Go.
+
+      Run with --watch or -w to watch for changes on proto files.
+    cmds:
+      - . genproto.sh
+    sources:
+      - pb/**/*.proto
+    generates:
+      - services/**/*.go
+
+  check:
+    deps:
+      - format
+      - shadow
+      - lint
+      - build
+      - test
+
+  default:
+    deps:
+      - build
+
+  integration-test:
+    summary: |
+      Runs integration tests
+    cmds:
+      - go test --tags=integration ./...
