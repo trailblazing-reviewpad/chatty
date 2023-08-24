@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    paths-ignore:
+    paths:
       - '**.go'
 
 jobs:
