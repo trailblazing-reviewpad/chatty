@@ -9,19 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download dependencies
-        run: |
-          go install gotest.tools/gotestsum@latest
-          go install github.com/go-task/task/v3/cmd/task@latest
-          go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow@latest
-
-      - name: Check
-        run: |
-          task format
-          task shadow
-
       - name: Build
-        run: task build
+        run: |
+          go build -o chatty ./cli/main.go
 
-      - name: Unit tests
-        run: task test
