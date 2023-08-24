@@ -1,0 +1,15 @@
+rules:
+  - name: event is opened or synchronize
+    spec: $getEventType() == "opened" || $getEventType() == "synchronize"
+
+  - name: touches go files
+    spec: $containsFilePattern("*.go")
+  
+
+workflows:
+  - name: run-ci
+    run:
+      if: $rule("touches go files") && $rule("event is opened or synchronize")
+      then:
+        - $info("Running CI")
+        - $triggerWorkflow("build.yml")
