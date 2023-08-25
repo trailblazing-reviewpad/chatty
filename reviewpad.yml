@@ -4,7 +4,6 @@ rules:
 
   - name: touches go files
     spec: $containsFilePattern("**/**.go")
-  
 
 workflows:
   - name: run-ci
@@ -13,3 +12,9 @@ workflows:
       then:
         - $info("Running CI")
         - $triggerWorkflow("build.yml")
+
+  - name: block-merge
+    run:
+       if: $getCheckRunConclusion("build") != "success"
+       then: $failCheckStatus("Build is not passing")
+       else: $info("Build is passing, merging...")
