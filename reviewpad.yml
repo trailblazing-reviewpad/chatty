@@ -1,4 +1,8 @@
 groups:
+  - name: dependencies-bots
+    description: "Bots that manage dependencies"
+    spec: '["dependabot[bot]", "renovate[bot]", "engineeringalpha"]'
+
   - name: dependencies-managers
     description: "Managers of the project dependencies"
     spec: '["marcelosousa", "ferreiratiago"]'
@@ -25,7 +29,9 @@ workflows:
               - if: $getCheckRunConclusion("build") == "failure"
                 then:
                   - $review("REQUEST_CHANGES", "The build is failing. Adding developer as assignee.")
-                  - $addAssignee($group("dependencies-managers"), 1)
+                  - if: $isElementOf($getAuthor(), $group("dependencies-bots"))
+                    then:
+                      - $addAssignee($group("dependencies-managers"), 1)
             else:
               - $info("This PR contains high-risk dependencies. Adding reviewer for approval.")
               - $addReviewers($group("dependencies-managers"), 1)
