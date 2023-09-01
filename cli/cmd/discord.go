@@ -128,6 +128,10 @@ func chatOnDiscord() error {
 var discordCmd = &cobra.Command{
 	Use: "discord",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 0 {
+			return cmd.Help()
+		}
+
 		return chatOnDiscord()
 	},
 }
