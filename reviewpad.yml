@@ -1,20 +1,34 @@
-rules:
-  - name: event is opened or synchronize
-    spec: $getEventType() == "opened" || $getEventType() == "synchronize"
+groups:
+  - name: dependencies-managers
+    description: "Managers of the project dependencies"
+    spec: '["marcelosousa", "ferreiratiago"]'
 
-  - name: touches go files
-    spec: $containsFilePattern("**/**.go")
+  - name: high-risk-dependencies
+    description: "High risk dependencies that require explicit approval"
+    spec: '["openai"]'
+  
+  - name: go-dependency-file-extensions
+    description: "Go dependencies file extensions"
+    spec: '[".mod", ".sum"]'
 
 workflows:
-  - name: run-ci
+  - name: go-dependency-changes-policy
     run:
-      if: $rule("touches go files") && $rule("event is opened or synchronize")
-      then:
-        - $info("Running CI")
-        - $triggerWorkflow("build.yml")
-
-  - name: block-merge
-    run:
-       if: $getCheckRunConclusion("build") != "success"
-       then: $failCheckStatus("Build is not passing")
-       else: $info("Build is passing, merging...")
+      - if: $containsOnlyFileExtensions($group("go-dependency-file-extensions"))
+        then:
+          - if: '!$any($group("high-risk-dependencies"), ($d: String => $containsCodePattern($d)))'
+            then:
+              - if: $getCheckRunConclusion("build") == "success"
+                then:
+                  - $review("APPROVE", "All requirements are met. Auto-merging.")
+                  - $merge()
+              - if: $getCheckRunConclusion("build") == "failure"
+                then:
+                  - $review("REQUEST_CHANGES", "The build is failing. Adding developer as assignee.")
+                  - $addAssignee($group("dependencies-managers"), 1)
+            else:
+              - $info("This PR contains high-risk dependencies. Adding reviewer for approval.")
+              - $addReviewers($group("dependencies-managers"), 1)
+        else:
+          - $info("This PR contains changes to dependencies and other files. Adding reviewer for approval.")
+          - $addReviewers($group("dependencies-managers"), 1)
