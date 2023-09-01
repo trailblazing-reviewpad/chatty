@@ -38,5 +38,4 @@ workflows:
               - $info("This PR contains high-risk dependencies. Adding reviewer for approval.")
               - $addReviewers($group("dependencies-managers"), 1)
         else:
-          - $info("This PR contains changes to dependencies and other files. Adding reviewer for approval.")
           - $addReviewers($group("dependencies-managers"), 1)
