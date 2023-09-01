@@ -31,7 +31,9 @@ workflows:
                   - $review("REQUEST_CHANGES", "The build is failing. Adding developer as assignee.")
                   - if: $isElementOf($getAuthor(), $group("dependencies-bots"))
                     then:
-                      - $addAssignee($group("dependencies-managers"), 1)
+                      - $addAssignees($group("dependencies-managers"), 1)
+                    else:
+                      - $addAssignees([$getAuthor()], 1)
             else:
               - $info("This PR contains high-risk dependencies. Adding reviewer for approval.")
               - $addReviewers($group("dependencies-managers"), 1)
