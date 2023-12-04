@@ -11,4 +11,3 @@ I believe that people should be able to use these agents for free so that the te
 Integrate a basic AI agent using OpenAI API to Discord and Slack.
 
 This is will be a simple CLI tool that will allow you to connect to a Discord or Slack channel and have a bot respond to messages.
-
